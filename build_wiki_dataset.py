@@ -15,6 +15,9 @@ import requests
 from bs4 import BeautifulSoup
 
 import traceback
+DEBUG_File=True
+DEBUG_tags=False
+
 
 def parse_args(argv):
     parser = argparse.ArgumentParser(
@@ -46,9 +49,16 @@ if __name__ == '__main__':
             req = requests.get( realURL )
             soup = BeautifulSoup(req.text, 'html.parser') #, "lxml")
             desc=soup.select("[class*=commons-file-information-table] > table")
-            soupdesc = BeautifulSoup(str(desc[0]), "html.parser")
-            metadata=soup.select("[class*=mw-imagepage-section-metadata] > table")
-            
+            metadata=''
+            try:
+                soupdesc = BeautifulSoup(str(desc[0]), "html.parser")
+                metadata=soup.select("[class*=mw-imagepage-section-metadata] > table")
+            except:
+                testpage=True
+                if (DEBUG_File):
+                    traceback.print_exc(file=sys.stderr)
+                pass
+
             if ( len(metadata) > 0 and re.search("(jpg|JPG|png|PNG)",realURL) ):
                 testpage=False
 
@@ -69,7 +79,13 @@ if __name__ == '__main__':
                     
                     tag=soupdesc.find(id="fileinfotpl_aut").next_sibling.next_sibling
                     tagcreator=tag.find("a")
-                    author=tagauthor+" "+hrefauthor+" "+tagcreator["title"].replace("User:","")
+                    taguser=""
+                    try:
+                        taguser=tagcreator["title"].replace("User:","")
+                    except:
+                        pass
+
+                    author=tagauthor+" "+hrefauthor+" "+taguser
                     thistile["usersNotes"]=author
 
                     tag=soupdesc.find(id="fileinfotpl_date").next_sibling.next_sibling
@@ -81,7 +97,8 @@ if __name__ == '__main__':
                     print("page OK.")
                 except:
                     testpage=True
-                    traceback.print_exc(file=sys.stderr)
+                    if (DEBUG_File):
+                        traceback.print_exc(file=sys.stderr)
                     pass
 
                 if (not testpage):
@@ -91,12 +108,16 @@ if __name__ == '__main__':
                         try:
                             utc_time = datetime.strptime(tagtime["datetime"], "%Y-%m-%d %H:%M:%S")
                         except:
-                            utc_time = datetime.strptime(tagtime["datetime"], "%Y-%m-%d")
+                            try:
+                                utc_time = datetime.strptime(tagtime["datetime"], "%Y-%m-%d")
+                            except:
+                                utc_time = datetime.strptime(tagtime["datetime"], "%Y-%m")
                         epoch_time = (utc_time - datetime(1970, 1, 1)).total_seconds()
                         tag1="{01_time,0,"+str(epoch_time)+","+str(epoch_now)+"}"
                         tags.append(tag1)
                     except:
-                        traceback.print_exc(file=sys.stderr)
+                        if (DEBUG_tags):
+                            traceback.print_exc(file=sys.stderr)
                         pass
                     try:
                         position=soup.select("[class*=mw-kartographer-maplink]")[0]
@@ -107,7 +128,7 @@ if __name__ == '__main__':
                         tag3 ="{03_lat,-90,"+data_lat+",90}"
                         tags.append(tag3)
                     except:
-                        traceback.print_exc(file=sys.stderr)
+                        #traceback.print_exc(file=sys.stderr)
                         pass
                     try:
                         fileInfo=soup.select("[class*=fileInfo]")[0].get_text()
@@ -129,7 +150,8 @@ if __name__ == '__main__':
                         tag6 = "{06_fsize,1,"+fsize+",100000}"
                         tags.append(tag6)
                     except:
-                        traceback.print_exc(file=sys.stderr)
+                        if (DEBUG_tags):
+                            traceback.print_exc(file=sys.stderr)
                         pass
                     try:
                         #Exposure time
@@ -137,7 +159,8 @@ if __name__ == '__main__':
                         tag7 = "{07_expos,0,"+et+",1}"
                         tags.append(tag7)
                     except:
-                        traceback.print_exc(file=sys.stderr)
+                        if (DEBUG_tags):
+                            traceback.print_exc(file=sys.stderr)
                         pass
                     try:
                         #focal
@@ -145,7 +168,8 @@ if __name__ == '__main__':
                         tag8 = "{08_focal,1,"+f+",32}"
                         tags.append(tag8)
                     except:
-                        traceback.print_exc(file=sys.stderr)
+                        if (DEBUG_tags):
+                            traceback.print_exc(file=sys.stderr)
                         pass
                     try:
                         #shutterspeed
@@ -153,7 +177,8 @@ if __name__ == '__main__':
                         tag9 = "{09_shutsp,1,"+spe+",20}"
                         tags.append(tag9)
                     except:
-                        traceback.print_exc(file=sys.stderr)
+                        if (DEBUG_tags):
+                            traceback.print_exc(file=sys.stderr)
                         pass
                     try:
                         #ISO
@@ -161,7 +186,8 @@ if __name__ == '__main__':
                         tag10 = "{10_iso,50,"+iso+",25000}"
                         tags.append(tag10)
                     except:
-                        traceback.print_exc(file=sys.stderr)
+                        if (DEBUG_tags):
+                            traceback.print_exc(file=sys.stderr)
                         pass
                     try:
                         #aperture
@@ -169,7 +195,8 @@ if __name__ == '__main__':
                         tag11 = "{11_aper,1,"+aper+",32}"
                         tags.append(tag11)
                     except:
-                        traceback.print_exc(file=sys.stderr)
+                        if (DEBUG_tags):
+                            traceback.print_exc(file=sys.stderr)
                         pass
                         
                     thistile["tags"]=tags
@@ -183,6 +210,10 @@ if __name__ == '__main__':
     json_nodes={}
     json_nodes["nodes"]=json_tiles
     nodes_json_text=json.JSONEncoder().encode(json_nodes)
-    
+
+    print("build "+args.name)
+    os.system("touch "+args.name)
     with open(args.name,'w+') as f:
         f.write(nodes_json_text)
+        f.close()
+    os.system("ls -la "+args.name)
