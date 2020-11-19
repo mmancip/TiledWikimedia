@@ -115,6 +115,7 @@ if __name__ == '__main__':
                         epoch_time = (utc_time - datetime(1970, 1, 1)).total_seconds()
                         tag1="{01_time,0,"+str(epoch_time)+","+str(epoch_now)+"}"
                         tags.append(tag1)
+                        thistile["comment"]="01_time : "+str(epoch_time)+"; "+thistile["comment"]
                     except:
                         if (DEBUG_tags):
                             traceback.print_exc(file=sys.stderr)
@@ -127,6 +128,8 @@ if __name__ == '__main__':
                         data_lat=position["data-lat"]
                         tag3 ="{03_lat,-90,"+data_lat+",90}"
                         tags.append(tag3)
+                        thistile["comment"]="02_lon : "+data_lon+"; "+thistile["comment"]
+                        thistile["comment"]="03_lat : "+data_lat+"; "+thistile["comment"]
                     except:
                         #traceback.print_exc(file=sys.stderr)
                         pass
@@ -139,9 +142,11 @@ if __name__ == '__main__':
                         #Image width
                         tag4 = "{04_width,1,"+ma.group("width").replace(",",".")+",16000}"
                         tags.append(tag4)
+                        thistile["comment"]="04_width : "+ma.group("width").replace(",",".")+"; "+thistile["comment"]
                         #Image height
                         tag5 = "{05_height,1,"+ma.group("height").replace(",",".")+",16000}"
                         tags.append(tag5)
+                        thistile["comment"]="05_height : "+ma.group("height").replace(",",".")+"; "+thistile["comment"]
                         
                         #size (convert byte or byte ?)
                         fsize=ma.group("size").replace(",",".")
@@ -149,6 +154,7 @@ if __name__ == '__main__':
                             fsize=str(float(fsize)*1000)
                         tag6 = "{06_fsize,1,"+fsize+",100000}"
                         tags.append(tag6)
+                        thistile["comment"]="06_fsize : "+fsize+"; "+thistile["comment"]
                     except:
                         if (DEBUG_tags):
                             traceback.print_exc(file=sys.stderr)
@@ -158,6 +164,7 @@ if __name__ == '__main__':
                         et=re.sub('.*\(','',metadata[0].select("[class*=exif-exposuretime] > td")[0].get_text()).replace(')','')
                         tag7 = "{07_expos,0,"+et+",1}"
                         tags.append(tag7)
+                        thistile["comment"]="07_expos : "+et+"; "+thistile["comment"]
                     except:
                         if (DEBUG_tags):
                             traceback.print_exc(file=sys.stderr)
@@ -167,6 +174,7 @@ if __name__ == '__main__':
                         f=exif.select("[class*=exif-fnumber] > td")[0].get_text().replace('f/','')
                         tag8 = "{08_focal,1,"+f+",32}"
                         tags.append(tag8)
+                        thistile["comment"]="08_focal : "+f+"; "+thistile["comment"]
                     except:
                         if (DEBUG_tags):
                             traceback.print_exc(file=sys.stderr)
@@ -176,6 +184,7 @@ if __name__ == '__main__':
                         spe=exif.select("[class*=exif-shutterspeedvalue] > td")[0].get_text()
                         tag9 = "{09_shutsp,1,"+spe+",20}"
                         tags.append(tag9)
+                        thistile["comment"]="09_shutsp : "+spe+"; "+thistile["comment"]
                     except:
                         if (DEBUG_tags):
                             traceback.print_exc(file=sys.stderr)
@@ -185,6 +194,7 @@ if __name__ == '__main__':
                         iso=metadata[0].select("[class*=exif-isospeedratings] > td")[0].get_text().replace(",","")
                         tag10 = "{10_iso,50,"+iso+",25000}"
                         tags.append(tag10)
+                        thistile["comment"]="10_iso : "+iso+"; "+thistile["comment"]
                     except:
                         if (DEBUG_tags):
                             traceback.print_exc(file=sys.stderr)
@@ -194,6 +204,7 @@ if __name__ == '__main__':
                         aper=exif.select("[class*=exif-aperturevalue] > td")[0].get_text()
                         tag11 = "{11_aper,1,"+aper+",32}"
                         tags.append(tag11)
+                        thistile["comment"]="11_aper : "+aper+"; "+thistile["comment"]
                     except:
                         if (DEBUG_tags):
                             traceback.print_exc(file=sys.stderr)
